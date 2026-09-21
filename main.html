@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nexus Network Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Light Theme - Modern Purple & Teal */
+    --paper: #F4F5F7;
+    --panel: #FFFFFF;
+    --ink: #1F2232;
+    --ink-muted: #6E758C;
+    --border: #E2E4EB;
+    --grid-line: rgba(110, 117, 140, 0.08);
+    --accent: #6B46C1;
+    --accent-hover: #553C9A;
+    --accent-soft: rgba(107, 70, 193, 0.08);
+    --dir-out: #00A3C4;
+    --dir-out-soft: rgba(0, 163, 196, 0.08);
+    --dir-in: #6B46C1;
+    --dir-in-soft: rgba(107, 70, 193, 0.06);
+    --proto-http: #6B46C1;
+    --proto-smtp: #DD6B20;
+    --proto-dns: #718096;
+    --proto-tls: #D53F8C;
+    --proto-tcp: #4A5568;
+    --node-client: #00A3C4;
+    --node-server: #6B46C1;
+    --shadow: 0 2px 4px rgba(31, 34, 50, 0.04), 0 12px 28px rgba(31, 34, 50, 0.06);
+    color-scheme: light;
+  }
+ 
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      /* Dark Theme - Midnight & Neon */
+      --paper: #0F111A;
+      --panel: #161925;
+      --ink: #E2E2ED;
+      --ink-muted: #8F93A2;
+      --border: #292D3E;
+      --grid-line: rgba(143, 147, 162, 0.06);
+      --accent: #B388FF;
+      --accent-hover: #D1B3FF;
+      --accent-soft: rgba(179, 136, 255, 0.12);
+      --dir-out: #4FD1C5;
+      --dir-out-soft: rgba(79, 209, 197, 0.12);
+      --dir-in: #B388FF;
+      --dir-in-soft: rgba(179, 136, 255, 0.10);
+      --proto-http: #B388FF;
+      --proto-smtp: #F6AD55;
+      --proto-dns: #A0AEC0;
+      --proto-tls: #F687B3;
+      --proto-tcp: #CBD5E0;
+      --node-client: #4FD1C5;
+      --node-server: #B388FF;
+      --shadow: 0 2px 6px rgba(0,0,0,0.4), 0 16px 32px rgba(0,0,0,0.5);
+      color-scheme: dark;
+    }
+  }
+ 
+  :root[data-theme="dark"] {
+    --paper: #0F111A;
+    --panel: #161925;
+    --ink: #E2E2ED;
+    --ink-muted: #8F93A2;
+    --border: #292D3E;
+    --grid-line: rgba(143, 147, 162, 0.06);
+    --accent: #B388FF;
+    --accent-hover: #D1B3FF;
+    --accent-soft: rgba(179, 136, 255, 0.12);
+    --dir-out: #4FD1C5;
+    --dir-out-soft: rgba(79, 209, 197, 0.12);
+    --dir-in: #B388FF;
+    --dir-in-soft: rgba(179, 136, 255, 0.10);
+    --proto-http: #B388FF;
+    --proto-smtp: #F6AD55;
+    --proto-dns: #A0AEC0;
+    --proto-tls: #F687B3;
+    --proto-tcp: #CBD5E0;
+    --node-client: #4FD1C5;
+    --node-server: #B388FF;
+    --shadow: 0 2px 6px rgba(0,0,0,0.4), 0 16px 32px rgba(0,0,0,0.5);
+    color-scheme: dark;
+  }
+ 
+  * { box-sizing: border-box; }
+ 
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+ 
+  body {
+    margin: 0;
+    min-height: 100%;
+    font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+    color: var(--ink);
+    background-color: var(--paper);
+    background-image:
+      repeating-linear-gradient(0deg, var(--grid-line) 0px, var(--grid-line) 1px, transparent 1px, transparent 32px),
+      repeating-linear-gradient(90deg, var(--grid-line) 0px, var(--grid-line) 1px, transparent 1px, transparent 32px);
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+ 
+  header {
+    position: relative;
+    background-color: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 1.5rem 2rem;
+    text-align: center;
+  }
+ 
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--ink-muted);
+    letter-spacing: 0.02em;
+    margin: 0 0 0.35rem 0;
+  }
+ 
+  h1 {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1.5rem;
+    letter-spacing: -0.01em;
+  }
+ 
+  .subtitle {
+    margin: 0.3rem 0 0 0;
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+  }
+ 
+  .theme-toggle {
+    position: absolute;
+    right: 1.5rem;
+    top: env(safe-area-inset-top, 0px);
+    margin-top: 1.15rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--ink);
+    font-size: 1.05rem;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+  .theme-toggle:hover { background: var(--accent-soft); }
+  .theme-toggle:active { transform: scale(0.94); }
+  .theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+ 
+  .main-workspace {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1.75rem;
+    max-width: 1320px;
+    margin: 0 auto;
+  }
+ 
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    transition: background-color 0.25s ease, border-color 0.25s ease;
+  }
+ 
+  .left-panel { flex: 1 1 320px; max-width: 380px; height: fit-content; }
+  .right-panel { flex: 2 1 560px; display: flex; flex-direction: column; min-width: 0; }
+ 
+  h2 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--ink);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.75rem;
+    margin: 0 0 1.25rem 0;
+  }
+ 
+  .scenario-tabs {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+ 
+  .scenario-tab {
+    flex: 1 1 auto;
+    border: 1px solid var(--border);
+    background: var(--paper);
+    color: var(--ink-muted);
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 500;
+    padding: 0.5rem 0.6rem;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+  .scenario-tab:hover { border-color: var(--accent); color: var(--ink); }
+  .scenario-tab.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+  .scenario-tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+ 
+  .activity-section { display: none; flex-direction: column; gap: 1rem; }
+  .activity-section.active { display: flex; }
+ 
+  label { display: block; font-size: 0.82rem; font-weight: 500; margin-bottom: 0.3rem; color: var(--ink-muted); }
+  .input-group { margin-bottom: 0.35rem; }
+ 
+  select, input, textarea {
+    width: 100%;
+    padding: 0.6rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    font-family: inherit;
+    font-size: 0.875rem;
+    background-color: var(--paper);
+    color: var(--ink);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  textarea { resize: vertical; font-family: 'IBM Plex Mono', monospace; font-size: 0.82rem; }
+ 
+  select:focus, input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+ 
+  button.action-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 0.7rem;
+    border-radius: 7px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 0.4rem;
+    transition: background-color 0.15s ease;
+  }
+  button.action-btn:hover { background: var(--accent-hover); }
+  button.action-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+ 
+  /* Connection path visual */
+  .path-visual {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 0.5rem 1.5rem 0.5rem;
+    flex-shrink: 0;
+  }
+ 
+  .node {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    width: 128px;
+    text-align: center;
+  }
+ 
+  .node-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    border: 1.5px solid var(--border);
+    background: var(--paper);
+  }
+  .node.client .node-icon { border-color: var(--node-client); }
+  .node.server .node-icon { border-color: var(--node-server); }
+ 
+  .node-label { font-size: 0.8rem; font-weight: 600; }
+  .node-ip { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--ink-muted); }
+ 
+  .path-track {
+    position: relative;
+    flex: 1 1 auto;
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 0.25rem;
+    min-width: 60px;
+  }
+ 
+  .path-packet {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    transform: translateY(-50%);
+    opacity: 0;
+    background: var(--proto-http);
+    box-shadow: 0 0 0 4px var(--paper);
+  }
+ 
+  .path-caption {
+    position: absolute;
+    top: -1.6rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--ink-muted);
+    white-space: nowrap;
+  }
+ 
+  /* Playback controls */
+  .controls-container {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+  .control-btn {
+    background: var(--paper);
+    color: var(--ink);
+    border: 1px solid var(--border);
+    font-family: inherit;
+    font-size: 0.82rem;
+    padding: 0.45rem 0.85rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.15s ease;
+  }
+  .control-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .control-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .control-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+ 
+  .step-counter {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--ink-muted);
+    margin-left: 0.4rem;
+  }
+ 
+  #log-container {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 52vh;
+    padding-right: 6px;
+    display: flex;
+    flex-direction: column;
+  }
+ 
+  .log-empty {
+    display: flex;
+    height: 100%;
+    min-height: 220px;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-muted);
+    font-size: 0.875rem;
+    text-align: center;
+    padding: 1rem;
+  }
+ 
+  .log-entry {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem 1.1rem;
+    margin-bottom: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .log-entry.animating { animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .log-out { background: var(--dir-out-soft); border-left: 3px solid var(--dir-out); }
+  .log-in { background: var(--dir-in-soft); border-left: 3px solid var(--dir-in); }
+ 
+  .log-index {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--ink-muted);
+    flex-shrink: 0;
+    padding-top: 0.15rem;
+    width: 1.6rem;
+  }
+ 
+  .log-body { flex: 1; min-width: 0; }
+ 
+  .meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+    margin-bottom: 0.6rem;
+    flex-wrap: wrap;
+  }
+ 
+  .meta-route { font-family: 'IBM Plex Mono', monospace; }
+  .meta-route .arrow { margin: 0 0.3rem; color: var(--ink-muted); }
+ 
+  .protocol-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 5px;
+    flex-shrink: 0;
+  }
+ 
+  pre {
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.55;
+    color: var(--ink);
+  }
+ 
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+ 
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+ 
+  @media (max-width: 900px) {
+    .main-workspace { flex-direction: column; padding: 1rem; }
+    .left-panel { max-width: 100%; }
+    #log-container { max-height: none; }
+    header { padding: 1.25rem 1rem; }
+    .theme-toggle { right: 1rem; }
+  }
+</style>
+</head>
+<body>
+ 
+<header>
+  <p class="eyebrow">Nexus University · Networking Lab</p>
+  <h1>Application-Layer Protocol Visualizer</h1>
+  <p class="subtitle">Step through how a client and server actually talk to each other</p>
+  <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Toggle dark mode" aria-label="Toggle dark mode">🌓</button>
+</header>
+ 
+<div class="main-workspace">
+  <div class="panel left-panel">
+    <h2>Choose a scenario</h2>
+ 
+    <div class="scenario-tabs" role="tablist" aria-label="Scenario">
+      <button class="scenario-tab active" data-activity="browse" onclick="switchActivity('browse')">Web browsing</button>
+      <button class="scenario-tab" data-activity="mail" onclick="switchActivity('mail')">Sending mail</button>
+      <button class="scenario-tab" data-activity="stream" onclick="switchActivity('stream')">Video streaming</button>
+    </div>
+ 
+    <div id="form-browse" class="activity-section active">
+      <div class="input-group">
+        <label for="url">Address to visit</label>
+        <input type="text" id="url" value="http://www.nexus.edu/portal">
+      </div>
+      <button class="action-btn" onclick="triggerAction('browse')">Load the page</button>
+    </div>
+ 
+    <div id="form-mail" class="activity-section">
+      <div class="input-group">
+        <label for="to_email">To</label>
+        <input type="text" id="to_email" value="prof.reyes@nexus.edu">
+      </div>
+      <div class="input-group">
+        <label for="subject">Subject</label>
+        <input type="text" id="subject" value="Assignment 3 submission">
+      </div>
+      <div class="input-group">
+        <label for="body">Message</label>
+        <textarea id="body" rows="4">Attached is my submission for the routing lab.</textarea>
+      </div>
+      <button class="action-btn" onclick="triggerAction('mail')">Send the email</button>
+    </div>
+ 
+    <div id="form-stream" class="activity-section">
+      <div class="input-group">
+        <label for="quality">Playback quality</label>
+        <select id="quality">
+          <option value="1080p">1080p</option>
+          <option value="720p" selected>720p</option>
+          <option value="480p">480p</option>
+        </select>
+      </div>
+      <button class="action-btn" onclick="triggerAction('stream')">Start the video</button>
+    </div>
+  </div>
+ 
+  <div class="panel right-panel">
+    <h2>What's happening on the wire</h2>
+ 
+    <div class="path-visual" aria-hidden="true">
+      <div class="node client">
+        <div class="node-icon">💻</div>
+        <div class="node-label">Client</div>
+        <div class="node-ip">192.168.1.42</div>
+      </div>
+      <div class="path-track">
+        <div class="path-caption" id="path-caption"></div>
+        <div class="path-packet" id="path-packet"></div>
+      </div>
+      <div class="node server">
+        <div class="node-icon" id="server-icon">🌐</div>
+        <div class="node-label" id="server-label">Web server</div>
+        <div class="node-ip" id="server-ip">203.0.113.10</div>
+      </div>
+    </div>
+ 
+    <div class="controls-container" id="playback-controls">
+      <button class="control-btn" onclick="replaySequence()">⏪ Replay</button>
+      <button class="control-btn" id="btn-back" onclick="stepBackward()">⏮ Back</button>
+      <button class="control-btn" id="play-pause-btn" onclick="togglePlayPause()">⏸ Pause</button>
+      <button class="control-btn" id="btn-fwd" onclick="stepForward()">⏭ Forward</button>
+      <span class="step-counter" id="step-counter"></span>
+    </div>
+ 
+    <div id="log-container">
+      <div class="log-empty" id="log-empty">Pick a scenario on the left, then run it to see the exchange happen step by step.</div>
+    </div>
+  </div>
+</div>
+ 
+<script>
+  /* ---------- theme ---------- */
+  function toggleTheme() {
+    const html = document.documentElement;
+    html.setAttribute('data-theme', html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  }
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+ 
+  /* ---------- lab topology (documentation-reserved IP ranges: RFC 5737 / RFC 1918) ---------- */
+  const CLIENT = { icon: '💻', label: 'Client', ip: '192.168.1.42' };
+  const RESOLVER = { icon: '🧭', label: 'DNS Resolver', ip: '192.168.1.1' };
+  const SERVERS = {
+    browse: { icon: '🌐', label: 'Web server', ip: '203.0.113.10', host: 'nexus.edu' },
+    mail:   { icon: '✉️', label: 'Mail server', ip: '198.51.100.25', host: 'mail.nexus.edu' },
+    stream: { icon: '📡', label: 'Streaming edge', ip: '192.0.2.77', host: 'stream.nexus.edu' }
+  };
+ 
+  function step(dir, protocol, msg, from, to) {
+    return {
+      type: dir,
+      protocol,
+      msg,
+      sender: `${from.label} (${from.ip})`,
+      receiver: `${to.label} (${to.ip})`
+    };
+  }
+ 
+  /* ---------- sequence generators (fully client-side, no network calls) ---------- */
+  function seqBrowse(rawUrl) {
+    let host, path, secure;
+    try {
+      const u = new URL(/^https?:\/\//i.test(rawUrl) ? rawUrl : 'http://' + rawUrl);
+      host = u.host || SERVERS.browse.host;
+      path = (u.pathname || '/') + (u.search || '');
+      secure = u.protocol === 'https:';
+    } catch (e) {
+      host = SERVERS.browse.host; path = '/'; secure = false;
+    }
+    const server = SERVERS.browse;
+    const steps = [];
+    steps.push(step('out', 'DNS', `Query: A record for ${host}`, CLIENT, RESOLVER));
+    steps.push(step('in', 'DNS', `Answer: ${host} → ${server.ip}`, RESOLVER, CLIENT));
+    steps.push(step('out', 'TCP', `SYN → SYN-ACK → ACK\nConnection established to ${server.ip}:${secure ? 443 : 80}`, CLIENT, server));
+    if (secure) {
+      steps.push(step('out', 'TLS', `ClientHello (TLS 1.3)\nSNI: ${host}`, CLIENT, server));
+      steps.push(step('in', 'TLS', `ServerHello, Certificate, Finished\nSession key agreed — traffic now encrypted`, server, CLIENT));
+    }
+    steps.push(step('out', 'HTTP', `GET ${path} HTTP/1.1\nHost: ${host}\nUser-Agent: NetLab/1.0\nAccept: text/html`, CLIENT, server));
+    steps.push(step('in', 'HTTP', `HTTP/1.1 200 OK\nContent-Type: text/html; charset=utf-8\nContent-Length: 4831\n\n<!DOCTYPE html>\n<html>...</html>`, server, CLIENT));
+    steps.push(step('out', 'TCP', `FIN → ACK\nConnection closed`, CLIENT, server));
+    return steps;
+  }
+ 
+  function seqMail(to, subject, body) {
+    const server = SERVERS.mail;
+    to = to || 'someone@example.edu';
+    subject = subject || '(no subject)';
+    body = body || '';
+    const steps = [];
+    steps.push(step('out', 'TCP', `SYN → SYN-ACK → ACK\nConnection established to ${server.ip}:25`, CLIENT, server));
+    steps.push(step('in', 'SMTP', `220 ${server.host} ESMTP ready`, server, CLIENT));
+    steps.push(step('out', 'SMTP', `EHLO client.local`, CLIENT, server));
+    steps.push(step('in', 'SMTP', `250-${server.host} Hello\n250 STARTTLS`, server, CLIENT));
+    steps.push(step('out', 'SMTP', `MAIL FROM:<student@nexus.edu>`, CLIENT, server));
+    steps.push(step('in', 'SMTP', `250 OK`, server, CLIENT));
+    steps.push(step('out', 'SMTP', `RCPT TO:<${to}>`, CLIENT, server));
+    steps.push(step('in', 'SMTP', `250 OK`, server, CLIENT));
+    steps.push(step('out', 'SMTP', `DATA\nSubject: ${subject}\n\n${body}\n.`, CLIENT, server));
+    steps.push(step('in', 'SMTP', `250 2.0.0 OK: queued as 7F3A21`, server, CLIENT));
+    steps.push(step('out', 'SMTP', `QUIT`, CLIENT, server));
+    steps.push(step('in', 'SMTP', `221 Bye`, server, CLIENT));
+    return steps;
+  }
+ 
+  function seqStream(quality) {
+    const server = SERVERS.stream;
+    quality = quality || '720p';
+    const steps = [];
+    steps.push(step('out', 'TCP', `SYN → SYN-ACK → ACK\nConnection established to ${server.ip}:443`, CLIENT, server));
+    steps.push(step('out', 'HTTP', `GET /lecture-14/manifest.mpd HTTP/1.1\nHost: ${server.host}`, CLIENT, server));
+    steps.push(step('in', 'HTTP', `200 OK\nContent-Type: application/dash+xml\nRepresentations: 480p, 720p, 1080p`, server, CLIENT));
+    steps.push(step('out', 'HTTP', `GET /lecture-14/${quality}/segment_001.m4s HTTP/1.1\nHost: ${server.host}`, CLIENT, server));
+    steps.push(step('in', 'HTTP', `200 OK\nContent-Type: video/mp4\nContent-Length: 812004 (${quality} segment)`, server, CLIENT));
+    steps.push(step('out', 'HTTP', `GET /lecture-14/${quality}/segment_002.m4s HTTP/1.1\nHost: ${server.host}`, CLIENT, server));
+    steps.push(step('in', 'HTTP', `200 OK\nBuffer healthy — continuing at ${quality}`, server, CLIENT));
+    return steps;
+  }
+ 
+  /* ---------- protocol colors ---------- */
+  function protocolVar(p) {
+    switch (p) {
+      case 'HTTP': return '--proto-http';
+      case 'SMTP': return '--proto-smtp';
+      case 'DNS': return '--proto-dns';
+      case 'TLS': return '--proto-tls';
+      case 'TCP': return '--proto-tcp';
+      default: return '--proto-tcp';
+    }
+  }
+  function protocolColor(p) {
+    return getComputedStyle(document.documentElement).getPropertyValue(protocolVar(p)).trim();
+  }
+ 
+  /* ---------- scenario switching ---------- */
+  const activityMeta = { browse: 'browse', mail: 'mail', stream: 'stream' };
+ 
+  function switchActivity(name) {
+    document.querySelectorAll('.scenario-tab').forEach(el => el.classList.toggle('active', el.dataset.activity === name));
+    document.querySelectorAll('.activity-section').forEach(el => el.classList.remove('active'));
+    document.getElementById(`form-${name}`).classList.add('active');
+    updateServerNode(name);
+  }
+ 
+  function updateServerNode(name) {
+    const s = SERVERS[name];
+    document.getElementById('server-icon').textContent = s.icon;
+    document.getElementById('server-label').textContent = s.label;
+    document.getElementById('server-ip').textContent = s.ip;
+  }
+ 
+  /* ---------- playback state ---------- */
+  let currentSequence = [];
+  let stepIndex = 0;
+  let playTimer = null;
+  let isPlaying = false;
+ 
+  function triggerAction(type) {
+    let sequence;
+    if (type === 'browse') sequence = seqBrowse(document.getElementById('url').value);
+    if (type === 'mail') sequence = seqMail(document.getElementById('to_email').value, document.getElementById('subject').value, document.getElementById('body').value);
+    if (type === 'stream') sequence = seqStream(document.getElementById('quality').value);
+    updateServerNode(type);
+    startSequence(sequence);
+  }
+ 
+  function updateControlButtons() {
+    document.getElementById('btn-back').disabled = (stepIndex <= 0);
+    document.getElementById('btn-fwd').disabled = (stepIndex >= currentSequence.length);
+    document.getElementById('play-pause-btn').innerHTML = isPlaying ? '⏸ Pause' : '▶️ Play';
+    document.getElementById('step-counter').textContent = currentSequence.length
+      ? `Step ${Math.min(stepIndex, currentSequence.length)} of ${currentSequence.length}`
+      : '';
+  }
+ 
+  function startSequence(sequence) {
+    clearTimeout(playTimer);
+    currentSequence = sequence;
+    stepIndex = 0;
+    isPlaying = true;
+    document.getElementById('log-container').innerHTML = '';
+    document.getElementById('playback-controls').style.display = 'flex';
+    updateControlButtons();
+    playNextStep();
+  }
+ 
+  function playNextStep() {
+    if (!isPlaying) return;
+    if (stepIndex >= currentSequence.length) { isPlaying = false; updateControlButtons(); return; }
+    renderStep(currentSequence[stepIndex], true);
+    stepIndex++;
+    updateControlButtons();
+    playTimer = setTimeout(playNextStep, 1300);
+  }
+ 
+  function movePacket(dir, protocol) {
+    const packet = document.getElementById('path-packet');
+    const caption = document.getElementById('path-caption');
+    const color = protocolColor(protocol);
+    packet.style.transition = 'none';
+    packet.style.background = color;
+    packet.style.left = dir === 'out' ? '0%' : 'calc(100% - 10px)';
+    packet.style.opacity = '1';
+    caption.textContent = protocol;
+    caption.style.color = color;
+    void packet.offsetWidth;
+    packet.style.transition = 'left 0.95s cubic-bezier(.4,0,.2,1), opacity 0.3s ease 0.65s';
+    packet.style.left = dir === 'out' ? 'calc(100% - 10px)' : '0%';
+    packet.style.opacity = '0';
+  }
+ 
+  function renderStep(stepData, animate) {
+    const logContainer = document.getElementById('log-container');
+    const empty = document.getElementById('log-empty');
+    if (empty) empty.remove();
+ 
+    if (animate) movePacket(stepData.type, stepData.protocol);
+ 
+    const div = document.createElement('div');
+    div.className = `log-entry log-${stepData.type} ${animate ? 'animating' : ''}`;
+    const escapedMsg = stepData.msg.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const color = protocolColor(stepData.protocol);
+ 
+    div.innerHTML = `
+      <span class="log-index">${String(logContainer.children.length + 1).padStart(2, '0')}</span>
+      <div class="log-body">
+        <div class="meta">
+          <span class="meta-route">${stepData.sender}<span class="arrow">${stepData.type === 'out' ? '→' : '←'}</span>${stepData.receiver}</span>
+          <span class="protocol-badge" style="background:${color}22; color:${color};">${stepData.protocol}</span>
+        </div>
+        <pre>${escapedMsg}</pre>
+      </div>
+    `;
+    logContainer.appendChild(div);
+    logContainer.scrollTop = logContainer.scrollHeight;
+  }
+ 
+  function togglePlayPause() {
+    if (isPlaying) {
+      isPlaying = false;
+      clearTimeout(playTimer);
+    } else {
+      if (stepIndex >= currentSequence.length) { startSequence(currentSequence); return; }
+      isPlaying = true;
+      playNextStep();
+    }
+    updateControlButtons();
+  }
+ 
+  function stepForward() {
+    clearTimeout(playTimer);
+    isPlaying = false;
+    if (stepIndex < currentSequence.length) {
+      renderStep(currentSequence[stepIndex], true);
+      stepIndex++;
+    }
+    updateControlButtons();
+  }
+ 
+  function stepBackward() {
+    clearTimeout(playTimer);
+    isPlaying = false;
+    if (stepIndex > 0) {
+      stepIndex--;
+      const logContainer = document.getElementById('log-container');
+      logContainer.innerHTML = '';
+      for (let i = 0; i < stepIndex; i++) renderStep(currentSequence[i], false);
+    }
+    updateControlButtons();
+  }
+ 
+  function replaySequence() {
+    clearTimeout(playTimer);
+    startSequence(currentSequence);
+  }
+</script>
+</body>
+</html>
